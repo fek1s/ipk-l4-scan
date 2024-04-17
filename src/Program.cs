@@ -1,4 +1,4 @@
-﻿namespace ipk_l4_scan.src
+﻿namespace ipk_l4_scan
 {
     internal class Program
     {

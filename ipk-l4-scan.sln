@@ -5,8 +5,6 @@ VisualStudioVersion = 17.9.34622.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ipk-l4-scan", "ipk-l4-scan.csproj", "{29E34DC5-7D48-444E-AB36-79877C631515}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewFolder1", "NewFolder1", "{8C5404C6-5C70-4959-B0B2-3AAA28C86701}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,7 +20,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{29E34DC5-7D48-444E-AB36-79877C631515} = {8C5404C6-5C70-4959-B0B2-3AAA28C86701}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AB5ADDCB-9C86-4D02-AA4A-7A5A731501F5}
