@@ -256,6 +256,12 @@ public class ArgumentParser
             return false;
         }
         
+        // Check if not greater than 65535
+        if (start > 65535 || end > 65535)
+        {
+            return false;
+        }
+        
         // Check if start is less than or equal to end
         return start <= end;
     }
