@@ -1,4 +1,3 @@
-using System;
 using System.Net.NetworkInformation;
 
 namespace ipk_l4_scan;
@@ -32,6 +31,11 @@ public class ArgumentParser
     /// Property for the target IP address or hostname.
     /// </summary>
     public string? Target { get; private set; }
+    
+    /// <summary>
+    /// Defines the maximum port number.
+    /// </summary>
+    private const int MaxPortNumber = 65535;
     
     /// <summary>
     /// Initializes a new instance of the ArgumentParser class.
@@ -154,8 +158,8 @@ public class ArgumentParser
             }
             else
             {   
-                // Check if the part is not empty
-                if (part == "")
+                // Check if the part is not empty and is a valid integer
+                if (part == "" || int.TryParse(part, out int _) == false)
                 {
                     Console.WriteLine("Error: Invalid port range.");
                     Environment.Exit(3);
@@ -257,7 +261,7 @@ public class ArgumentParser
         }
         
         // Check if not greater than 65535
-        if (start > 65535 || end > 65535)
+        if (start > MaxPortNumber || end > MaxPortNumber)
         {
             return false;
         }
