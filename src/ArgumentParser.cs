@@ -1,4 +1,5 @@
 using System.Net.NetworkInformation;
+using ipk_l4_scan.Exeptions;
 
 namespace ipk_l4_scan;
 
@@ -47,14 +48,14 @@ public class ArgumentParser
         UdpPorts = new List<int>();
         Timeout = 5000;
         
-        ParseArguments(args);
+        //ParseArguments(args);
     }
     
     /// <summary>
     /// Parses the command-line arguments.
     /// </summary>
     /// <param name="args"></param>
-    private void ParseArguments(string[] args)
+    public void ParseArguments(string[] args)
     {
         for (int i = 0; i < args.Length; i++)
         {
@@ -70,27 +71,39 @@ public class ArgumentParser
                             Interface = args[++i];    
                         }
                         else
-                        {
-                            Console.WriteLine($"Erorr: Nework interface {args[++i]} not found or not active.");
+                        {   
                             PrintActiveInterfaces();
-                            Environment.Exit(1);
+                            throw new InterfaceNotActive($"Erorr: Nework interface {args[++i]} not found or not active.");
                         }
                         
                     }
                     else
                     {
-                        Console.WriteLine("Error: Missing network interface name.");
                         PrintActiveInterfaces();
-                        Environment.Exit(2);
+                        throw new InvalidInterfaceName("Error: Missing network interface name.");
                     }
                     break;
                 case "-t":
                 case "--pt":
-                    ParsePortRange(args[++i], TcpPorts);
+                    if (i + 1 < args.Length && !args[i + 1].StartsWith("-"))
+                    {
+                        ParsePortRange(args[++i], TcpPorts);
+                    }
+                    else
+                    {
+                        throw new InvalidPortRangeException("Error: Missing port range.");
+                    }                    
                     break;
                 case "-u":
                 case "--pu":
-                    ParsePortRange(args[++i], UdpPorts);
+                    if (i + 1 < args.Length && !args[i + 1].StartsWith("-"))
+                    {
+                        ParsePortRange(args[++i], UdpPorts);
+                    }
+                    else
+                    {
+                        throw new InvalidPortRangeException("Error: Missing port range.");
+                    }                    
                     break;
                 case "w":
                 case "--wait":
@@ -114,23 +127,20 @@ public class ArgumentParser
         // Check if network interface is specified
         if (Interface == null)
         {
-            Console.WriteLine("Error: Network interface not specified.");
             PrintActiveInterfaces();
-            Environment.Exit(4);
+            throw new InvalidAgruments("Error: Network interface not specified.");
         }
         
         // Check if at least one port is specified
         if (TcpPorts.Count == 0 && UdpPorts.Count == 0)
         {
-            Console.WriteLine("Error: No ports specified.");
-            Environment.Exit(4);
+            throw new InvalidAgruments("Error: No ports specified.");
         }
         
         // Check if target is specified
         if (Target == null)
         {
-            Console.WriteLine("Error: Target not specified.");
-            Environment.Exit(4);
+            throw new InvalidAgruments("Error: Target not specified.");
         }
     }
 
@@ -147,11 +157,8 @@ public class ArgumentParser
             if (part.Contains("-"))
             {
                 string[] rangeParts = part.Split('-');
-                if (IsValidRange(rangeParts) == false)
-                {
-                    Console.WriteLine("Error: Invalid port range.");
-                    Environment.Exit(3);
-                }
+                IsValidRange(rangeParts);
+                
                 int start = int.Parse(rangeParts[0]);
                 int end = int.Parse(rangeParts[1]);
                 ports.AddRange(Enumerable.Range(start, end - start + 1));
@@ -161,13 +168,10 @@ public class ArgumentParser
                 // Check if the part is not empty and is a valid integer
                 if (part == "" || int.TryParse(part, out int _) == false)
                 {
-                    Console.WriteLine("Error: Invalid port range.");
-                    Environment.Exit(3);
+                    throw new InvalidPortRangeException("Invalid port range.");
                 }
-                else
-                {
-                    ports.Add(int.Parse(part));
-                }
+                ports.Add(int.Parse(part));
+                
                 
             }
         }
@@ -240,33 +244,36 @@ public class ArgumentParser
     /// </summary>
     /// <param name="rangeParts"></param>
     /// <returns></returns>
-    private bool IsValidRange(string[] rangeParts)
+    private void IsValidRange(string[] rangeParts)
     {
         // Check if the range has two parts
         if (rangeParts.Length != 2)
         {
-            return false;
+            throw new InvalidPortRangeException("Invalid port range.");
         }
         
         // Check if the range parts are valid integers
         if (int.TryParse(rangeParts[0], out int start) == false || int.TryParse(rangeParts[1], out int end) == false)
         {
-            return false;
+            throw new InvalidPortRangeException("Invalid port range.");
         }
         
         // Check if not negative
         if (start < 0 || end < 0)
         {
-            return false;
+            throw new InvalidPortRangeException("Invalid port range.");
         }
         
         // Check if not greater than 65535
         if (start > MaxPortNumber || end > MaxPortNumber)
         {
-            return false;
+            throw new InvalidPortRangeException("Invalid port range.");
         }
         
         // Check if start is less than or equal to end
-        return start <= end;
+        if (start > end)
+        {
+            throw new InvalidPortRangeException("Invalid port range.");
+        }
     }
 }
