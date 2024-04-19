@@ -11,3 +11,6 @@ OMEGA: L4 scanner
 ## Zdroje
 - [Získání informací o aktivních rozhraních](https://learn.microsoft.com/en-us/dotnet/api/system.net.networkinformation?view=net-8.0)
 - [gitignore](https://github.com/github/gitignore/blob/main/VisualStudio.gitignore)
+### Získaní informací o cíli
+- [Dns Class](https://learn.microsoft.com/en-us/dotnet/api/system.net.dns?view=net-8.0)
+- [IPaddress Class](https://learn.microsoft.com/en-us/dotnet/api/system.net.ipaddress?view=net-8.0)

@@ -1,4 +1,6 @@
 ﻿using ipk_l4_scan.Exeptions;
+using System.Net;
+
 namespace ipk_l4_scan
 {
     internal class Program
@@ -9,7 +11,7 @@ namespace ipk_l4_scan
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            ArgumentParser parser = new ArgumentParser(args);
+            ArgumentParser parser = new ArgumentParser();
 
             try
             {
@@ -47,8 +49,14 @@ namespace ipk_l4_scan
             Console.WriteLine("Timeout: " + parser.Timeout);
             Console.WriteLine("TCP ports: " + string.Join(", ", parser.TcpPorts));
             Console.WriteLine("UDP ports: " + string.Join(", ", parser.UdpPorts));
+            
+            IPAddress[] addresses = Dns.GetHostAddresses(parser.Target);
+            
+            foreach (IPAddress address in addresses)
+            {
+                Console.WriteLine($"{address} | {address.AddressFamily}");
+            }
         }
-        
         
     }
 }

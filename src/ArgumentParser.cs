@@ -31,7 +31,7 @@ public class ArgumentParser
     /// <summary>
     /// Property for the target IP address or hostname.
     /// </summary>
-    public string? Target { get; private set; }
+    public string Target { get; private set; }
     
     /// <summary>
     /// Defines the maximum port number.
@@ -41,13 +41,13 @@ public class ArgumentParser
     /// <summary>
     /// Initializes a new instance of the ArgumentParser class.
     /// </summary>
-    /// <param name="args">The command-line arguments provided to the program.</param>
-    public ArgumentParser(string[] args)
+    public ArgumentParser()
     {
         TcpPorts = new List<int>();
         UdpPorts = new List<int>();
         Timeout = 5000;
-        
+        Target = "";
+
         //ParseArguments(args);
     }
     
@@ -138,7 +138,7 @@ public class ArgumentParser
         }
         
         // Check if target is specified
-        if (Target == null)
+        if (Target == "")
         {
             throw new InvalidAgruments("Error: Target not specified.");
         }
