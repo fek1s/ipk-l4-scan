@@ -7,18 +7,31 @@ namespace ipk_l4_scan;
 
 public class UpdPortScanner
 {
-
+    // Local address used for binding the ICMP socket and the UDP client
     private IPAddress _localAddress;
 
+    // Number of retransmissions
     private int _retranmissionCount; 
     
-    //Constructor
+    /// <summary>
+    /// Constructor of the class
+    /// </summary>
+    /// <param name="localAddress"></param>
+    /// <param name="retransmissionCount"></param>
     public UpdPortScanner(IPAddress localAddress, int retransmissionCount)
     {
         _localAddress = localAddress;
         _retranmissionCount = retransmissionCount;
     }
     
+    /// <summary>
+    /// Method used for scanning UDP ports of a target, using UdpCliend for sending UDP packet
+    /// and Raw socket for receiving ICMP messages
+    /// </summary>
+    /// <param name="target"> Is the target IP address to scan</param>
+    /// <param name="port"> Target port to scan</param>
+    /// <param name="timeout"> Timeout in milliseconds</param>
+    /// <returns></returns>
     public UdpPortScanResult Scan(IPAddress target, int port, int timeout)
         {
             try
@@ -45,7 +58,7 @@ public class UpdPortScanner
                             icmpSocket.ReceiveTimeout = timeout;
                             int receivedBytes = icmpSocket.ReceiveFrom(buffer, ref remoteEp);
 
-                            // Check if the received ICMP message is a "port unreachable" message
+                            // Check if the reception ICMP message is a "port unreachable" message
                             if (receivedBytes >= 20 && buffer[20] == 3 && buffer[21] == 3)
                             {
                                 // Close the ICMP socket
@@ -99,7 +112,10 @@ public class UpdPortScanner
                 return UdpPortScanResult.Error;
             }
         }
-
+    
+    /// <summary>
+    /// Contains the possible results of the UDP port scan
+    /// </summary>
     public enum UdpPortScanResult
     {
         Open,
