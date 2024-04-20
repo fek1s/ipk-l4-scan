@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.NetworkInformation;
 using ipk_l4_scan.Exeptions;
 
@@ -12,6 +13,14 @@ public class ArgumentParser
     /// Property for the network interface to use.
     /// </summary>
     public string? Interface { get; private set; }
+    
+    /// <summary>
+    /// Ip address of the network interface.
+    /// </summary>
+    public IPAddress? InterfaceAddress { get; private set; }
+    
+    public IPAddress? InterfaceAddressV6 { get; private set; }
+    
     
     /// <summary>
     /// List of ports to scan via TCP.
@@ -32,6 +41,11 @@ public class ArgumentParser
     /// Property for the target IP address or hostname.
     /// </summary>
     public string Target { get; private set; }
+
+    /// <summary>
+    /// Is the number of retransmissions used for UDP scanning. Default is 1. Maximum is 10.
+    /// </summary>
+    public int RetransmissionCount = 1;
     
     /// <summary>
     /// Defines the maximum port number.
@@ -47,6 +61,7 @@ public class ArgumentParser
         UdpPorts = new List<int>();
         Timeout = 5000;
         Target = "";
+        InterfaceAddress = IPAddress.None;
 
         //ParseArguments(args);
     }
@@ -68,7 +83,18 @@ public class ArgumentParser
                     {
                         if (IsValidInterface(args[i+1]))
                         {
-                            Interface = args[++i];    
+                            foreach (NetworkInterface netInterface in NetworkInterface.GetAllNetworkInterfaces())
+                            {
+                                if (netInterface.Name.Equals(args[i + 1], StringComparison.OrdinalIgnoreCase))
+                                {
+                                    Interface = netInterface.Name;
+                                    // TODO check if the interface has an IP address assigned
+                                    InterfaceAddress = netInterface.GetIPProperties().UnicastAddresses
+                                        .FirstOrDefault(ip => ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)?.Address;
+                                    InterfaceAddressV6 = netInterface.GetIPProperties().UnicastAddresses
+                                        .FirstOrDefault(ip => ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)?.Address;
+                                }
+                            }
                         }
                         else
                         {   
@@ -105,9 +131,23 @@ public class ArgumentParser
                         throw new InvalidPortRangeException("Error: Missing port range.");
                     }                    
                     break;
-                case "w":
+                case "-w":
                 case "--wait":
                     Timeout = int.Parse(args[++i]);
+                    break;
+                case "-r":
+                    try 
+                    {
+                        RetransmissionCount = int.Parse(args[++i]);
+                        if (RetransmissionCount > 10 || RetransmissionCount < 1)
+                        {
+                            RetransmissionCount = 1;
+                        }
+                    }
+                    catch (FormatException)
+                    {
+                        RetransmissionCount = 1;
+                    }
                     break;
                 default:
                     Target = args[i];
