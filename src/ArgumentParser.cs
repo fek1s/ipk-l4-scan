@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.NetworkInformation;
 using ipk_l4_scan.Exeptions;
 
@@ -12,6 +13,12 @@ public class ArgumentParser
     /// Property for the network interface to use.
     /// </summary>
     public string? Interface { get; private set; }
+    
+    /// <summary>
+    /// Ip address of the network interface.
+    /// </summary>
+    public IPAddress? InterfaceAddress { get; private set; }
+    
     
     /// <summary>
     /// List of ports to scan via TCP.
@@ -47,6 +54,7 @@ public class ArgumentParser
         UdpPorts = new List<int>();
         Timeout = 5000;
         Target = "";
+        InterfaceAddress = IPAddress.None;
 
         //ParseArguments(args);
     }
@@ -68,7 +76,15 @@ public class ArgumentParser
                     {
                         if (IsValidInterface(args[i+1]))
                         {
-                            Interface = args[++i];    
+                            foreach (NetworkInterface netInterface in NetworkInterface.GetAllNetworkInterfaces())
+                            {
+                                if (netInterface.Name.Equals(args[i + 1], StringComparison.OrdinalIgnoreCase))
+                                {
+                                    Interface = netInterface.Name;
+                                    InterfaceAddress = netInterface.GetIPProperties().UnicastAddresses
+                                        .FirstOrDefault(ip => ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)?.Address;
+                                }
+                            }
                         }
                         else
                         {   
