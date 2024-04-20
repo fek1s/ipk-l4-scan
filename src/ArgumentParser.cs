@@ -121,7 +121,7 @@ public class ArgumentParser
                         throw new InvalidPortRangeException("Error: Missing port range.");
                     }                    
                     break;
-                case "w":
+                case "-w":
                 case "--wait":
                     Timeout = int.Parse(args[++i]);
                     break;
