@@ -36,8 +36,8 @@ public class UpdPortScanner
         {
             try
             {
-                using (Socket icmpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Raw, ProtocolType.Icmp))
-                using (UdpClient udpClient = new UdpClient())
+                using (Socket icmpSocket = new Socket(target.AddressFamily, SocketType.Raw, ProtocolType.Icmp))
+                using (UdpClient udpClient = new UdpClient(target.AddressFamily))
                 {
                     udpClient.Client.ReceiveTimeout = timeout;
                     

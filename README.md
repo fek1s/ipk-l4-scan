@@ -8,6 +8,7 @@ OMEGA: L4 scanner
 - `3` - Špatný formát argumentu portu (např. -u 22, , -u 22- , -u 22,-2, -u y-x)
 - `4` - Nebyly poskytnuty nezbytné argumenty
 - `5` - Cíl nedostupný z daného rozhraní
+- `6` - Lokální rozhraní nemá přirazenou IPv6 adresu
 
 ## Zdroje
 - [Získání informací o aktivních rozhraních](https://learn.microsoft.com/en-us/dotnet/api/system.net.networkinformation?view=net-8.0)

@@ -19,6 +19,8 @@ public class ArgumentParser
     /// </summary>
     public IPAddress? InterfaceAddress { get; private set; }
     
+    public IPAddress? InterfaceAddressV6 { get; private set; }
+    
     
     /// <summary>
     /// List of ports to scan via TCP.
@@ -86,8 +88,11 @@ public class ArgumentParser
                                 if (netInterface.Name.Equals(args[i + 1], StringComparison.OrdinalIgnoreCase))
                                 {
                                     Interface = netInterface.Name;
+                                    // TODO check if the interface has an IP address assigned
                                     InterfaceAddress = netInterface.GetIPProperties().UnicastAddresses
                                         .FirstOrDefault(ip => ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)?.Address;
+                                    InterfaceAddressV6 = netInterface.GetIPProperties().UnicastAddresses
+                                        .FirstOrDefault(ip => ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)?.Address;
                                 }
                             }
                         }
