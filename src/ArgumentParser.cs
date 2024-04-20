@@ -39,6 +39,11 @@ public class ArgumentParser
     /// Property for the target IP address or hostname.
     /// </summary>
     public string Target { get; private set; }
+
+    /// <summary>
+    /// Is the number of retransmissions used for UDP scanning. Default is 1. Maximum is 10.
+    /// </summary>
+    public int RetransmissionCount = 1;
     
     /// <summary>
     /// Defines the maximum port number.
@@ -124,6 +129,20 @@ public class ArgumentParser
                 case "-w":
                 case "--wait":
                     Timeout = int.Parse(args[++i]);
+                    break;
+                case "-r":
+                    try 
+                    {
+                        RetransmissionCount = int.Parse(args[++i]);
+                        if (RetransmissionCount > 10 || RetransmissionCount < 1)
+                        {
+                            RetransmissionCount = 1;
+                        }
+                    }
+                    catch (FormatException)
+                    {
+                        RetransmissionCount = 1;
+                    }
                     break;
                 default:
                     Target = args[i];
