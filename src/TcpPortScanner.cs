@@ -57,7 +57,6 @@ namespace ipk_l4_scan
         {
             Open,       // The port is open and accepting connections
             Closed,     // The port is closed
-            Filtered,   // The port is filtered or not responding
             Error       // An error occurred during the scan
         }
     }
