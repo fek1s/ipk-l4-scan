@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.NetworkInformation;
 using ipk_l4_scan.Exeptions;
+using ipk_l4_scan.tests;
 
 namespace ipk_l4_scan;
 
@@ -98,16 +99,23 @@ public class ArgumentParser
                         }
                         else
                         {   
-                            PrintActiveInterfaces();
                             throw new InterfaceNotActive($"Erorr: Nework interface {args[++i]} not found or not active.");
                         }
                         
                     }
                     else
                     {
-                        PrintActiveInterfaces();
                         throw new InvalidInterfaceName("Error: Missing network interface name.");
                     }
+                    break;
+                case "--test":
+                    if (Interface == null)
+                    {
+                        Environment.Exit(99);
+                    }
+                    ArgumentTester test = new ArgumentTester(Interface);
+                    test.RunTests();
+                    Environment.Exit(0);
                     break;
                 case "-t":
                 case "--pt":
@@ -167,8 +175,7 @@ public class ArgumentParser
         // Check if network interface is specified
         if (Interface == null)
         {
-            PrintActiveInterfaces();
-            throw new InvalidAgruments("Error: Network interface not specified.");
+            throw new InterfaceNotActive("Error: Network interface not specified.");
         }
         
         // Check if at least one port is specified
@@ -220,7 +227,7 @@ public class ArgumentParser
     /// <summary>
     /// Prints a list of active network interfaces and their details.
     /// </summary>
-    private void PrintActiveInterfaces()
+    public void PrintActiveInterfaces()
     {
         Console.WriteLine("List of active network interfaces:");
 
