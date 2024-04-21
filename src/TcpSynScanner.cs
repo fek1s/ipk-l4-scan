@@ -25,7 +25,7 @@ public class TcpSynScanner
     /// <param name="targetIpAddress"></param>
     /// <param name="portToScan"></param>
     /// <returns></returns>
-    public TcpPortScanResult Scan(string targetIpAddress, int portToScan)
+    public SynTcpPortScanResult Scan(string targetIpAddress, int portToScan)
     {
         try
         {
@@ -46,17 +46,17 @@ public class TcpSynScanner
                 Thread.Sleep(_timeout);
                 if (IsPortOpen(buffer, receivedBytes))
                 {
-                    return TcpPortScanResult.Open;
+                    return SynTcpPortScanResult.Open;
                 }
                 else
                 {
-                    return TcpPortScanResult.ClosedOrFiltered;
+                    return SynTcpPortScanResult.ClosedOrFiltered;
                 }
             }
         }
         catch (SocketException)
         {
-            return TcpPortScanResult.Error;
+            return SynTcpPortScanResult.Error;
         }
     }
 
@@ -167,7 +167,7 @@ public class TcpSynScanner
     }
 }
 
-public enum TcpPortScanResult
+public enum SynTcpPortScanResult
 {
     Open,
     ClosedOrFiltered,

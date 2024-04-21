@@ -1,5 +1,6 @@
 ﻿using ipk_l4_scan.Exeptions;
 using System.Net;
+using ipk_l4_scan.tests;
 
 namespace ipk_l4_scan
 {
@@ -20,12 +21,15 @@ namespace ipk_l4_scan
             catch (InterfaceNotActive e)
             {
                 Console.Error.WriteLine(e.Message);
+                parser.PrintActiveInterfaces();
                 
                 Environment.Exit(1);
             }
             catch (InvalidInterfaceName e)
             {
                 Console.WriteLine(e.Message);
+                parser.PrintActiveInterfaces();
+                
                 Environment.Exit(2);
             }
             catch (InvalidPortRangeException e)
@@ -68,6 +72,14 @@ namespace ipk_l4_scan
             
             // Check if the target IP address was resolved to IPv6 address
             bool isIpv6 = addresses[0].AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6;
+            
+            TcpPortScanner tcpScanner = new TcpPortScanner();
+            
+            foreach (int port in parser.TcpPorts)
+            {
+                TcpPortScanner.TcpPortScanResult result = tcpScanner.Scan(addresses[0], port);
+                Console.WriteLine($"{port}/tcp: {result}");
+            }
 
             UpdPortScanner scanner;
             
@@ -85,9 +97,6 @@ namespace ipk_l4_scan
             {
                 scanner = new UpdPortScanner(parser.InterfaceAddress, parser.RetransmissionCount);
             }
-            
-            // TODO Scan TCP ports
-            
             
             foreach (int port in parser.UdpPorts)
             {
