@@ -34,6 +34,9 @@ public class ArgumentTester
         TestUnspecifiedInterface();
     }
     
+    /// <summary>
+    /// Interface argument without specified interface name
+    /// </summary>
     private void TestInterface()
     {
         ArgumentParser parser = new ArgumentParser();
@@ -51,6 +54,9 @@ public class ArgumentTester
         }
     }
     
+    /// <summary>
+    /// Specified interface does not exist
+    /// </summary>
     private void TestInvalidInterface()
     {
         ArgumentParser parser = new ArgumentParser();
