@@ -39,7 +39,8 @@ Program je možné spustit pomocí příkazové řádky s následujícími argum
 - `-u <porty>`/ `--pu <porty>` - specifikuje porty, které budou skenovány pomocí UDP protokolu
 - `-t <porty>`/ `--pt <porty>` - specifikuje porty, které budou skenovány pomocí TCP protokolu
 - `-w <timeout>`/ `--wait <timeout>` - specifikuje timeout pro čekání na odpověď (v ms) (defaultně 5000ms)
-- `-r` - specifikuje, počet pokusů o opětovné odeslání packetu při neobdržení odpovědi během UDP skenování (defaultně 1)
+- `-r` /  - specifikuje, počet pokusů o opětovné odeslání packetu při neobdržení odpovědi během UDP skenování (defaultně 1)
+- `-d` / `--debug` - specifikuje, zda se mají zobrazovat ladící informace
 - Dále musí být zadán cíl skenování čili **IP adresa** cíle nebo **doménové jméno**
 
 ### Formát portů
@@ -57,6 +58,116 @@ zobrazovat informace o dostupných portech.
 
 
 ## Testování
+Fedora 39 -> Ubuntu 64-bit 
+
+- Funkčnost programu byla otestována pomocí nástroje Wireshark, který zachycuje síťový provoz.
+- V rámci testovaní je program spoušten s parametrem `-d`, který zobrazuje ladící informace.
+
+
+### UDP skenování
+#### Skenování otevřeného portu
+
+- Spouštěno : `ipk-l4-scan -i wlo1 -u 2000 10.102.90.139 -w 2000 -d`
+- Výstup:
+```
+Interface: wlo1
+Target: 10.102.90.139
+Timeout: 2000
+TCP ports:
+UDP ports: 2000
+Interface IP: 10.102.90.141
+Interface IPv6fe80::dd3:b0a0:cfc9:d1b%3
+Retransmission count: 1
+Host resolved as: 10.102.90.139
+==============================================
+2000/udp: Open
+```
+- Zde je výstřižek z Wiresharku zobrazující tuto komunikaci:
+![doc/udpscanopen.png](doc/udpscanopen.png)
+
+#### Skenování uzavřeného portu
+- Spouštěno : `ipk-l4-scan -i wlo1 -u 2000 10.102.90.139 -w 2000 -d`
+- Výstup:
+```
+Interface: wlo1
+Target: 10.102.90.139
+Timeout: 2000
+TCP ports: 
+UDP ports: 2000
+Interface IP: 10.102.90.141
+Interface IPv6: fe80::dd3:b0a0:cfc9:d1b%3
+Retransmission count: 1
+Host resolved as: 10.102.90.139 
+==============================================
+2000/udp: Closed
+```
+- Zde je výstřižek z Wiresharku zobrazující tuto komunikaci:
+![doc/udpscanclosed.png](doc/udp_port_closed.png)
+
+#### Skenovaní rozsahu portů
+- Spuštěno: `ipk-l4-scan -i wlo1 -u 1999-2001 10.102.90.139 -w 2000 -d`
+- Výstup:
+```
+Interface: wlo1
+Target: 10.102.90.139
+Timeout: 2000
+TCP ports: 
+UDP ports: 1999, 2000, 2001
+Interface IP: 10.102.90.141
+Interface IPv6: fe80::dd3:b0a0:cfc9:d1b%3
+Retransmission count: 1
+Host resolved as: 10.102.90.139 
+==============================================
+1999/udp: Closed
+2000/udp: Open
+2001/udp: Closed
+```
+- Výstřižek z Wiresharku:
+![doc/udprange.png](doc/udp_rangescan.png)
+
+#### Skenování seznamu portů
+- Spuštěno: `ipk-l4-scan -i wlo1 -u 2000,2003,2111 10.102.90.139 -w 2000 -d`
+- Výstup:
+```
+Interface: wlo1
+Target: 10.102.90.139
+Timeout: 2000
+TCP ports: 
+UDP ports: 2000, 2003, 2111
+Interface IP: 10.102.90.141
+Interface IPv6: fe80::dd3:b0a0:cfc9:d1b%3
+Retransmission count: 1
+Host resolved as: 10.102.90.139 
+==============================================
+2000/udp: Open
+2003/udp: Closed
+2111/udp: Closed
+```
+
+- Výstřižek z Wiresharku:
+- ![doc/udpportlist.png](doc/udp_listscan.png)
+
+### TCP skenování
+#### Skenování otevřeného portu
+- Ubuntu spouštěno: `nc -4 -l -v 10.102.90.139 2000`   
+- Fedora spouštěno: `ipk-l4-scan -i wlo1 -t 2000 10.102.90.139 -w 2000 -d`
+- Výstup:
+```
+Interface: wlo1
+Target: 10.102.90.139
+Timeout: 2000
+TCP ports: 2000
+UDP ports: 
+Interface IP: 10.102.90.141
+Interface IPv6: fe80::dd3:b0a0:cfc9:d1b%3
+Retransmission count: 1
+Host resolved as: 10.102.90.139 
+==============================================
+2000/tcp: Open
+```
+- Výstřižek z Wiresharku:
+- ![doc/tcpscanopen.png](doc/tcp_portopen.png)
+
 
 ## Dodatečná funkcionalita
 
