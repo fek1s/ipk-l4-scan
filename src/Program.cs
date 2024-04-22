@@ -1,6 +1,5 @@
 ﻿using ipk_l4_scan.Exeptions;
 using System.Net;
-using ipk_l4_scan.tests;
 
 namespace ipk_l4_scan
 {
