@@ -254,6 +254,21 @@ Target resolved as:
 - Výstřižek z Wiresharku:
 - ![doc/synscan.png](doc/tcp_synscan.png)
 
+### Testování argumentů
+- Provádí zakladní testovaní zpracování argumentů
+- Spouštěno `ipk-l4-scan -i lo --test`
+```
+TestInterface: Passed
+TestInvalidInterface: Passed
+UnspecifiedInterface: Passed
+TestInvalidPortRange: Passed
+TestPortRangeList: Passed
+TestPortRangeMissingSecondPort: Passed
+TestPortRangeNegative: Passed
+TestPortRangeInvalidFormat: Passed
+TestPortRangeNotNumber: Passed
+```
+
 
 ## Návratové kódy
 - `0` - vše proběhlo v pořádku
