@@ -18,8 +18,10 @@ public class ArgumentTester
 
     public void RunTests()
     {
+        // Testing interface arguments
         TestInterface();
         TestInvalidInterface();
+        TestUnspecifiedInterface();
         
         // Testing range of ports
         TestRangeOutOfScope(); 
@@ -29,9 +31,7 @@ public class ArgumentTester
         TestPortRangeInvalidFormat();
         TestPortRangeNotNumber();
         
-        
-        
-        TestUnspecifiedInterface();
+        // Testing arguments values
     }
     
     /// <summary>
