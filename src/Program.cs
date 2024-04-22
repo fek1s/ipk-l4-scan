@@ -46,24 +46,26 @@ namespace ipk_l4_scan
                 Console.WriteLine(e.Message);
                 Environment.Exit(99);
             }
-
-            Console.WriteLine("Interface: " + parser.Interface);
-            Console.WriteLine("Target: " + parser.Target);
-            Console.WriteLine("Timeout: " + parser.Timeout);
-            Console.WriteLine("TCP ports: " + string.Join(", ", parser.TcpPorts));
-            Console.WriteLine("UDP ports: " + string.Join(", ", parser.UdpPorts));
-            Console.WriteLine("Interface IP: " + parser.InterfaceAddress);
-            Console.WriteLine(parser.InterfaceAddressV6);
-            Console.WriteLine("Retransmission count: " + parser.RetransmissionCount);
             
-            // TODO what if no target is resolved?
             IPAddress[] addresses = Dns.GetHostAddresses(parser.Target);
-            
-            foreach (IPAddress address in addresses)
-            {
-                Console.WriteLine($"{address} | {address.AddressFamily}");
-            }
 
+            if (parser.Debug)
+            {
+                Console.WriteLine("Interface: " + parser.Interface);
+                Console.WriteLine("Target: " + parser.Target);
+                Console.WriteLine("Timeout: " + parser.Timeout);
+                Console.WriteLine("TCP ports: " + string.Join(", ", parser.TcpPorts));
+                Console.WriteLine("UDP ports: " + string.Join(", ", parser.UdpPorts));
+                Console.WriteLine("Interface IP: " + parser.InterfaceAddress);
+                Console.WriteLine("Interface IPv6: " + parser.InterfaceAddressV6);
+                Console.WriteLine("Retransmission count: " + parser.RetransmissionCount);
+                foreach (IPAddress address in addresses)
+                {
+                    Console.WriteLine($"Host resolved as: {address} ");
+                }
+                Console.WriteLine("==============================================");
+            }
+            
             if (parser.InterfaceAddress == null)
             {
                 Environment.Exit(1);

@@ -15,6 +15,8 @@ public class ArgumentParser
     /// </summary>
     public string? Interface { get; private set; }
     
+    public bool Debug { get; private set; }
+    
     /// <summary>
     /// Ip address of the network interface.
     /// </summary>
@@ -63,6 +65,7 @@ public class ArgumentParser
         Timeout = 5000;
         Target = "";
         InterfaceAddress = IPAddress.None;
+        Debug = false;
 
         //ParseArguments(args);
     }
@@ -116,6 +119,10 @@ public class ArgumentParser
                     ArgumentTester test = new ArgumentTester(Interface);
                     test.RunTests();
                     Environment.Exit(0);
+                    break;
+                case "-d":
+                case "--debug":
+                    Debug = true;
                     break;
                 case "-t":
                 case "--pt":
