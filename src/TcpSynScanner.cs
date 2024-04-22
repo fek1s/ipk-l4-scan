@@ -101,15 +101,10 @@ public class TcpSynScanner
         packet[37] = 0;
         packet[38] = 0; // Urgent pointer
         packet[39] = 0;
-        
-        //packet[40] = 0x4; // Option kind (SACK permitted)
-        //packet[41] = 0x2; // Option length
-        
         packet[40] = 0x2; // Options
         packet[41] = 0x4; // Option kind (Maximum segment size)
-        
         packet[42] = 0x5; // Option length
-        packet[43] = 0b10110100; // Option valu
+        packet[43] = 0b10110100; // Option value
         
         
         
