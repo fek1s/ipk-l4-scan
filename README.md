@@ -39,7 +39,8 @@ Program je možné spustit pomocí příkazové řádky s následujícími argum
 - `-u <porty>`/ `--pu <porty>` - specifikuje porty, které budou skenovány pomocí UDP protokolu
 - `-t <porty>`/ `--pt <porty>` - specifikuje porty, které budou skenovány pomocí TCP protokolu
 - `-w <timeout>`/ `--wait <timeout>` - specifikuje timeout pro čekání na odpověď (v ms) (defaultně 5000ms)
-- `-r` - specifikuje, počet pokusů o opětovné odeslání packetu při neobdržení odpovědi během UDP skenování (defaultně 1)
+- `-r` /  - specifikuje, počet pokusů o opětovné odeslání packetu při neobdržení odpovědi během UDP skenování (defaultně 1)
+- `-d` / `--debug` - specifikuje, zda se mají zobrazovat ladící informace
 - Dále musí být zadán cíl skenování čili **IP adresa** cíle nebo **doménové jméno**
 
 ### Formát portů
@@ -57,9 +58,201 @@ zobrazovat informace o dostupných portech.
 
 
 ## Testování
+Fedora 39 -> Ubuntu 64-bit 
 
-## Dodatečná funkcionalita
+- Funkčnost programu byla otestována pomocí nástroje Wireshark, který zachycuje síťový provoz.
+- V rámci testovaní je program spoušten s parametrem `-d`, který zobrazuje ladící informace.
 
+
+### UDP skenování
+#### Skenování otevřeného portu
+
+- Spouštěno : `ipk-l4-scan -i wlo1 -u 2000 10.102.90.139 -w 2000 -d`
+- Výstup:
+```
+Interface: wlo1
+Target: 10.102.90.139
+Timeout: 2000
+TCP ports:
+UDP ports: 2000
+Interface IP: 10.102.90.141
+Interface IPv6: fe80::dd3:b0a0:cfc9:d1b%3
+Retransmission count: 1
+Host resolved as: 10.102.90.139
+==============================================
+2000/udp: Open
+```
+- Zde je výstřižek z Wiresharku zobrazující tuto komunikaci:
+![doc/udpscanopen.png](doc/udpscanopen.png)
+
+#### Skenování uzavřeného portu
+- Spouštěno : `ipk-l4-scan -i wlo1 -u 2000 10.102.90.139 -w 2000 -d`
+- Výstup:
+```
+Interface: wlo1
+Target: 10.102.90.139
+Timeout: 2000
+TCP ports: 
+UDP ports: 2000
+Interface IP: 10.102.90.141
+Interface IPv6: fe80::dd3:b0a0:cfc9:d1b%3
+Retransmission count: 1
+Host resolved as: 10.102.90.139 
+==============================================
+2000/udp: Closed
+```
+- Zde je výstřižek z Wiresharku zobrazující tuto komunikaci:
+![doc/udpscanclosed.png](doc/udp_port_closed.png)
+
+#### Skenovaní rozsahu portů
+- Spuštěno: `ipk-l4-scan -i wlo1 -u 1999-2001 10.102.90.139 -w 2000 -d`
+- Výstup:
+```
+Interface: wlo1
+Target: 10.102.90.139
+Timeout: 2000
+TCP ports: 
+UDP ports: 1999, 2000, 2001
+Interface IP: 10.102.90.141
+Interface IPv6: fe80::dd3:b0a0:cfc9:d1b%3
+Retransmission count: 1
+Host resolved as: 10.102.90.139 
+==============================================
+1999/udp: Closed
+2000/udp: Open
+2001/udp: Closed
+```
+- Výstřižek z Wiresharku:
+![doc/udprange.png](doc/udp_rangescan.png)
+
+#### Skenování seznamu portů
+- Spuštěno: `ipk-l4-scan -i wlo1 -u 2000,2003,2111 10.102.90.139 -w 2000 -d`
+- Výstup:
+```
+Interface: wlo1
+Target: 10.102.90.139
+Timeout: 2000
+TCP ports: 
+UDP ports: 2000, 2003, 2111
+Interface IP: 10.102.90.141
+Interface IPv6: fe80::dd3:b0a0:cfc9:d1b%3
+Retransmission count: 1
+Host resolved as: 10.102.90.139 
+==============================================
+2000/udp: Open
+2003/udp: Closed
+2111/udp: Closed
+```
+
+- Výstřižek z Wiresharku:
+- ![doc/udpportlist.png](doc/udp_listscan.png)
+
+#### Skenevání IPv6 adresy
+- Spuštěno: `ipk-l4-scan -i wlo1 -u  5000,2000 2a0d:187:204f:e000:cc34:aed9:33c5:379e  -w 2000 -d`
+- Ubuntu spouštěno: `ncat -l -v  -u 2a0d:187:204f:e000:cc34:aed9:33c5:379e -p 2000`
+- Výstup:
+```
+Interface: wlo1
+Target: 2a0d:187:204f:e000:cc34:aed9:33c5:379e
+Timeout: 2000
+TCP ports: 
+UDP ports: 5000, 2000
+Interface IP: 192.168.1.109
+Interface IPv6: 2a0d:187:204f:e000:c4a4:bae:7ec0:d9fe
+Retransmission count: 1
+Target resolved as:
+2a0d:187:204f:e000:cc34:aed9:33c5:379e
+==============================================
+5000/udp: Closed
+2000/udp: Open
+```
+- Výstřižek z Wiresharku:
+![doc/udpipv6.png](doc/udp_ipv6_scan.png)
+
+### TCP skenování
+#### Skenování otevřeného portu
+- Ubuntu spouštěno: `nc -4 -l -v 10.102.90.139 2000`   
+- Fedora spouštěno: `ipk-l4-scan -i wlo1 -t 2000 10.102.90.139 -w 2000 -d`
+- Výstup:
+```
+Interface: wlo1
+Target: 10.102.90.139
+Timeout: 2000
+TCP ports: 2000
+UDP ports: 
+Interface IP: 10.102.90.141
+Interface IPv6: fe80::dd3:b0a0:cfc9:d1b%3
+Retransmission count: 1
+Host resolved as: 10.102.90.139 
+==============================================
+2000/tcp: Open
+```
+- Výstřižek z Wiresharku:
+- ![doc/tcpscanopen.png](doc/tcp_portopen.png)
+
+#### Skenování uzavřeného portu
+- Spuštěno: `ipk-l4-scan -i wlo1 -t 2001 192.168.1.193 -w 2000 -d`
+- Výstup:
+```
+Interface: wlo1
+Target: 192.168.1.193
+Timeout: 2000
+TCP ports: 2001
+UDP ports: 
+Interface IP: 192.168.1.109
+Interface IPv6: 2a0d:187:204f:e000:c4a4:bae:7ec0:d9fe
+Retransmission count: 1
+Target resolved as:
+192.168.1.193
+==============================================
+2001/tcp: Closed
+```
+- Výstřižek z Wiresharku:
+- ![doc/tcpscanclosed.png](doc/tcp_portclosed.png)
+
+
+
+#### Skenovaní IPv6 adresy
+- Spuštěno: `ipk-l4-scan -i wlo1 -t  5000,2000 2a0d:187:204f:e000:cc34:aed9:33c5:379e -w 2000 -d`
+- Ubuntu spouštěno: `ncat -l -v 2a0d:187:204f:e000:cc34:aed9:33c5:379e -p 2000`
+- Výstup:
+```
+Interface: wlo1
+Target: 2a0d:187:204f:e000:cc34:aed9:33c5:379e
+Timeout: 2000
+TCP ports: 5000, 2000
+UDP ports: 
+Interface IP: 192.168.1.109
+Interface IPv6: 2a0d:187:204f:e000:c4a4:bae:7ec0:d9fe
+Retransmission count: 1
+Target resolved as:
+2a0d:187:204f:e000:cc34:aed9:33c5:379e
+==============================================
+5000/tcp: Closed
+2000/tcp: Open
+```
+- Výstřižek z Wiresharku:
+- ![doc/tcpipv6.png](doc/tcp_ipv6_scan.png)
+
+#### SYN skenování
+- Spouštěno : `ipk-l4-scan -i wlo1 -t 2000 192.168.1.193 -w 2000 -d -ts`
+- Výstup:
+```
+Interface: wlo1
+Target: 192.168.1.193
+Timeout: 2000
+TCP ports: 2000
+UDP ports: 
+Interface IP: 192.168.1.109
+Interface IPv6: 2a0d:187:204f:e000:c4a4:bae:7ec0:d9fe
+Retransmission count: 1
+Target resolved as:
+192.168.1.193
+==============================================
+2000/tcp: Open
+```
+- Výstřižek z Wiresharku:
+- ![doc/synscan.png](doc/tcp_synscan.png)
 
 
 ## Návratové kódy
@@ -74,6 +267,7 @@ zobrazovat informace o dostupných portech.
 ## Zdroje
 - [Získání informací o aktivních rozhraních](https://learn.microsoft.com/en-us/dotnet/api/system.net.networkinformation?view=net-8.0)
 - [gitignore](https://github.com/github/gitignore/blob/main/VisualStudio.gitignore)
+- [Typy TCP skenoání](https://nmap.org/book/man-port-scanning-techniques.html)
 ### Získaní informací o cíli
 - [Dns Class](https://learn.microsoft.com/en-us/dotnet/api/system.net.dns?view=net-8.0)
 - [IPaddress Class](https://learn.microsoft.com/en-us/dotnet/api/system.net.ipaddress?view=net-8.0)

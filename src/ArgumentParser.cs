@@ -15,7 +15,15 @@ public class ArgumentParser
     /// </summary>
     public string? Interface { get; private set; }
     
+    /// <summary>
+    /// Defines if the debug mode is enabled.
+    /// </summary>
     public bool Debug { get; private set; }
+    
+    /// <summary>
+    /// Defines if the stealth mode is enabled.
+    /// </summary>
+    public bool Stealth { get; private set; }
     
     /// <summary>
     /// Ip address of the network interface.
@@ -66,6 +74,7 @@ public class ArgumentParser
         Target = "";
         InterfaceAddress = IPAddress.None;
         Debug = false;
+        Stealth = false;
 
         //ParseArguments(args);
     }
@@ -134,6 +143,9 @@ public class ArgumentParser
                     {
                         throw new InvalidPortRangeException("Error: Missing port range.");
                     }                    
+                    break;
+                case "-ts":
+                    Stealth = true;
                     break;
                 case "-u":
                 case "--pu":
