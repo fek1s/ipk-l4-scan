@@ -7,10 +7,14 @@ namespace ipk_l4_scan;
 
 public class UpdPortScanner
 {
-    // Local address used for binding the ICMP socket and the UDP client
+    /// <summary>
+    /// Local address used for binding the ICMP socket and the UDP client
+    /// </summary>
     private IPAddress _localAddress;
 
-    // Number of retransmissions
+    /// <summary>
+    /// Number of retransmissions
+    /// </summary>
     private int _retranmissionCount; 
     
     /// <summary>
