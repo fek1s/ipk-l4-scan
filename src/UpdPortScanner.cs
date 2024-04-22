@@ -74,6 +74,16 @@ public class UpdPortScanner
                                 // If an ICMP "port unreachable" message is received, consider the port closed
                                 return UdpPortScanResult.Closed;
                             }
+                            // Check if the received ICMP message is a "port unreachable" message
+                            // 
+                            if (receivedBytes >= 40 && buffer[1] == 4)
+                            {
+                                // ICMPv6 type 129 is "ICMPv6 Destination Unreachable" and code 0 indicates "No route to destination"
+                                // This typically means the port is closed
+                                icmpSocket.Close();
+                                udpClient.Close();
+                                return UdpPortScanResult.Closed;
+                            }
                         }
                         catch (SocketException e)
                         {

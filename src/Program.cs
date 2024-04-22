@@ -46,24 +46,29 @@ namespace ipk_l4_scan
                 Console.WriteLine(e.Message);
                 Environment.Exit(99);
             }
-
-            Console.WriteLine("Interface: " + parser.Interface);
-            Console.WriteLine("Target: " + parser.Target);
-            Console.WriteLine("Timeout: " + parser.Timeout);
-            Console.WriteLine("TCP ports: " + string.Join(", ", parser.TcpPorts));
-            Console.WriteLine("UDP ports: " + string.Join(", ", parser.UdpPorts));
-            Console.WriteLine("Interface IP: " + parser.InterfaceAddress);
-            Console.WriteLine(parser.InterfaceAddressV6);
-            Console.WriteLine("Retransmission count: " + parser.RetransmissionCount);
             
-            // TODO what if no target is resolved?
             IPAddress[] addresses = Dns.GetHostAddresses(parser.Target);
-            
-            foreach (IPAddress address in addresses)
-            {
-                Console.WriteLine($"{address} | {address.AddressFamily}");
-            }
 
+            
+            if (parser.Debug)
+            {
+                Console.WriteLine("Interface: " + parser.Interface);
+                Console.WriteLine("Target: " + parser.Target);
+                Console.WriteLine("Timeout: " + parser.Timeout);
+                Console.WriteLine("TCP ports: " + string.Join(", ", parser.TcpPorts));
+                Console.WriteLine("UDP ports: " + string.Join(", ", parser.UdpPorts));
+                Console.WriteLine("Interface IP: " + parser.InterfaceAddress);
+                Console.WriteLine("Interface IPv6: " + parser.InterfaceAddressV6);
+                Console.WriteLine("Retransmission count: " + parser.RetransmissionCount);
+                Console.WriteLine("Target resolved as:");
+                foreach (IPAddress address in addresses)
+                {
+                    Console.WriteLine(address);
+                }
+                Console.WriteLine("==============================================");
+            }
+            
+            // If the interface does not have IP address, we need to exit the program
             if (parser.InterfaceAddress == null)
             {
                 Environment.Exit(1);
@@ -72,13 +77,27 @@ namespace ipk_l4_scan
             // Check if the target IP address was resolved to IPv6 address
             bool isIpv6 = addresses[0].AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6;
             
-            TcpPortScanner tcpScanner = new TcpPortScanner();
-            
-            foreach (int port in parser.TcpPorts)
+            // If stealth mode is enabled, we need to use TCP SYN scan
+            if (parser.Stealth)
             {
-                TcpPortScanner.TcpPortScanResult result = tcpScanner.Scan(addresses[0], port);
-                Console.WriteLine($"{port}/tcp: {result}");
+                TcpSynScanner synScanner = new TcpSynScanner(parser.InterfaceAddress.ToString(), 44689, parser.Timeout);
+                foreach (int port in parser.TcpPorts)
+                {
+                    SynTcpPortScanResult result = synScanner.Scan(addresses[0].ToString(), port);
+                    Console.WriteLine($"{port}/tcp: {result}");
+                }
             }
+            else
+            {
+                TcpPortScanner tcpScanner = new TcpPortScanner();
+            
+                foreach (int port in parser.TcpPorts)
+                {
+                    TcpPortScanner.TcpPortScanResult result = tcpScanner.Scan(addresses[0], port);
+                    Console.WriteLine($"{port}/tcp: {result}");
+                }    
+            }
+            
 
             UpdPortScanner scanner;
             
