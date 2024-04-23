@@ -8,9 +8,8 @@
 3. [**Spuštění**](#spuštění)
 4. [**Implementovaná funkcionalita**](#implementovaná-funkcionalita)
 5. [**Testování**](#testování)
-6. [**Dodatečná funkcionalita**](#dodatečná-funkcionalita)
-7. [**Návratové kódy**](#návratové-kódy)
-8. [**Zdroje**](#zdroje)
+6. [**Návratové kódy**](#návratové-kódy)
+7. [**Zdroje**](#zdroje)
 
 ## Úvod
 Cílem projektu bylo vytvořit síťový skener, který bude schopen skenovat cílový počítač pomocí různých protokolů. 
@@ -53,16 +52,55 @@ Program je možné spustit pomocí příkazové řádky s následujícími argum
 
 - Program je schopen skenovat cílový počítač pomocí protokolu TCP a UDP pomocí zadaného rozhraní a 
 zobrazovat informace o dostupných portech.
+- Pro získání informací o cíli je využita třída `Dns` a `IPAddress` z knihovny `System.Net` pro získání IP adresy cíle.
+- Získání informací o lokálním rozhraní je implementováno pomocí třídy `NetworkInterface` z knihovny `System.Net.NetworkInformation`.
 
+
+### UDP
+
+- Pro UDP skenování je v programu implementována třída `UpdPortScanner`, která poskytuje metodu `Scan` k provádění 
+skenování cílového portu. Tato třída využívá jak třídu `Socket` pro příjem ICMP zpráv, tak třídu `UdpClient` pro 
+odesílání UDP paketů.
+
+- Metoda `Scan` postupně zasílá prázdný UDP paket na zvolený port cílového zařízení. Poté čeká na odpověď v podobě ICMP 
+zprávy. Pokud přijde ICMP zpráva s typem 3 a kódem 3, port je považován za uzavřený a skenování končí s výsledkem`UdpPortScanResult.Closed`.
+
+- V případě, že nebyla přijata žádná ICMP zpráva a vypršel nastavený timeout, je port považován za otevřený a 
+skenování končí s výsledkem `UdpPortScanResult.Open`.
+
+- Pro IPv6 adresy je implementována dodatečná kontrola, která kontroluje, zda příchozí ICMP zpráva signalizuje 
+nedostupnost (typ 129, kód 0), což indikuje uzavřený port.
+
+- Pokud nastane jakákoliv jiná chyba během skenování, je výsledek skenování označen jako `UdpPortScanResult.Error`.
+
+Tato implementace umožňuje spolehlivé skenování UDP portů s ohledem na různé reakce a situace, které mohou nastat 
+při komunikaci s cílovým zařízením.
+
+### TCP
+
+- Implementace TCP skenování využívá třídu `TcpPortScanner` a metodu `Scan`, která provádí skenování cílového portu. 
+Při skenování se vytvoří instance třídy `TcpClient`, která umožňuje vytvoření TCP spojení se zvoleným cílovým zařízením a portem.
+
+- Metoda `Scan` začíná spojení na zvoleném portu pomocí asynchronní metody `BeginConnect`, která zahajuje inicializaci 
+spojení bez blokování hlavního vlákna. Počká na dokončení pokusu o spojení pomocí metody `EndConnect`.
+
+- Pokud se spojení podaří navázat, je považován daný port za otevřený, a výsledek skenování je vrácen 
+jako `TcpPortScanResult.Open`.
+
+- V případě, že spojení nebylo úspěšné a došlo k chybě spojení (například odpověďí RST), je port považován za 
+uzavřený, a výsledek skenování je vrácen jako `TcpPortScanResult.Closed`.
+
+- V případě jakékoliv jiné chyby, která není přímo spojena s uzavřením portu (například selhání spojení z 
+jiného důvodu), je výsledek skenování vrácen jako `TcpPortScanResult.Error`.
 
 
 
 ## Testování
-Fedora 39 -> Ubuntu 64-bit 
-
+- Testování probíhalo mezi počítači s operačními systémy Fedora 39 a virtualizovaným Ubuntu 64-bit.
+- Skenovaní probíhalo směrem z Fedory na Ubuntu.
+- Pro testování byly využity nástroje `nc` a `ncat` pro vytvoření testovacích serverů.
 - Funkčnost programu byla otestována pomocí nástroje Wireshark, který zachycuje síťový provoz.
 - V rámci testovaní je program spoušten s parametrem `-d`, který zobrazuje ladící informace.
-
 
 ### UDP skenování
 #### Skenování otevřeného portu
@@ -83,6 +121,8 @@ Host resolved as: 10.102.90.139
 2000/udp: Open
 ```
 - Zde je výstřižek z Wiresharku zobrazující tuto komunikaci:
+- Vydíme, že je zaslán UDP packet na port 2000 a jelikož nebyla přijata žádná odpověď, tak je zaslán další packet, 
+pokud ani na něj nepřijde odpověď, je port považován za otevřený.
 ![doc/udpscanopen.png](doc/udpscanopen.png)
 
 #### Skenování uzavřeného portu
@@ -102,6 +142,7 @@ Host resolved as: 10.102.90.139
 2000/udp: Closed
 ```
 - Zde je výstřižek z Wiresharku zobrazující tuto komunikaci:
+- Vydíme, že je zaslán UDP packet na port 2000 a jelikož odpověď je ICMP zpráva s typem 3 a kódem 3, je port považován za uzavřený.
 ![doc/udpscanclosed.png](doc/udp_port_closed.png)
 
 #### Skenovaní rozsahu portů
@@ -167,6 +208,8 @@ Target resolved as:
 2000/udp: Open
 ```
 - Výstřižek z Wiresharku:
+- Zde je vidět, že je zaslán UDP packet na port 5000 a odpověď na něj ICMPv6 s kódem 4, což značí, že port je uzavřený.
+- Dále je zaslán UDP packet na port 2000 a jelikož nebyla přijata žádná odpověď, je port považován za otevřený.
 ![doc/udpipv6.png](doc/udp_ipv6_scan.png)
 
 ### TCP skenování
@@ -188,6 +231,8 @@ Host resolved as: 10.102.90.139
 2000/tcp: Open
 ```
 - Výstřižek z Wiresharku:
+- Zde je vidět, že je zaslán TCP packet na port 2000 a jelikož je odpověď SYN-ACK, je port považován za otevřený. Dále je 
+pak spojení co nejrychleji ukončeno.
 - ![doc/tcpscanopen.png](doc/tcp_portopen.png)
 
 #### Skenování uzavřeného portu
@@ -208,6 +253,7 @@ Target resolved as:
 2001/tcp: Closed
 ```
 - Výstřižek z Wiresharku:
+- Zde je vidět, že je zaslán TCP packet na port 2001 a jelikož je odpověď RST, je port považován za uzavřený.
 - ![doc/tcpscanclosed.png](doc/tcp_portclosed.png)
 
 
@@ -252,6 +298,7 @@ Target resolved as:
 2000/tcp: Open
 ```
 - Výstřižek z Wiresharku:
+- Zde vydíme zaslání SYN packetu na port 2000, ale jelikož nedostane odpověď, tak není možné určit stav portu.
 - ![doc/synscan.png](doc/tcp_synscan.png)
 
 ### Testování argumentů
