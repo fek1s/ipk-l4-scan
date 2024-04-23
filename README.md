@@ -68,8 +68,7 @@ zprávy. Pokud přijde ICMP zpráva s typem 3 a kódem 3, port je považován za
 - V případě, že nebyla přijata žádná ICMP zpráva a vypršel nastavený timeout, je port považován za otevřený a 
 skenování končí s výsledkem `UdpPortScanResult.Open`.
 
-- Pro IPv6 adresy je implementována dodatečná kontrola, která kontroluje, zda příchozí ICMP zpráva signalizuje 
-nedostupnost (typ 129, kód 0), což indikuje uzavřený port.
+- Pro IPv6 adresy je implementována dodatečná kontrola, která kontroluje, zda příchozí ICMP zpráva neindikuje uzavřený port.
 
 - Pokud nastane jakákoliv jiná chyba během skenování, je výsledek skenování označen jako `UdpPortScanResult.Error`.
 
